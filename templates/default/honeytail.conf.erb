@@ -1,0 +1,132 @@
+[Application Options]
+; Only send 1 / N log lines
+SampleRate = <%= @app_opts['sample_rate'] %>
+
+; Number of concurrent connections to open to Honeycomb
+NumSenders = <%= @app_opts['num_senders'] %>
+
+; Print debugging output
+; Debug = false
+
+; How frequently, in seconds, to print out summary info
+StatusInterval = <%= @app_opts['status_interval'] %>
+
+; Configure honeytail to ingest old data in order to backfill Honeycomb. Sets the correct values for --backoff, --tail.read_from, and --tail.stop
+Backfill = <%= @app_opts['backfill'] %>
+
+; For the field listed, apply a one-way hash to the field content. May be specified multiple times
+<% @app_opts['scrub_fields'].each do |field| %>
+ScrubFields = <%= field %>
+<% end %>
+
+; Do not send the field to Honeycomb. May be specified multiple times
+<% @app_opts['drop_fields'].each do |field| %>
+DropFields = <%= field %>
+<% end %>
+
+; Add the field to every event. Field should be key=val. May be specified multiple times
+<% @app_opts['add_fields'].each do |field| %>
+AddFields = <%= field %>
+<% end %>
+
+; Identify a field that contains an HTTP request of the form 'METHOD /path HTTP/1.x' or just the request path. Break apart that field into subfields that contain components. May be specified multiple times. Defaults to 'request' when using the nginx parser
+<% @app_opts['request_shape'].each do |field| %>
+RequestShape = <%= field %>
+<% end %>
+
+; Prefix to use on fields generated from request_shape to prevent field collision
+ShapePrefix = <%= @app_opts['shape_prefix'] %>
+
+; A pattern for the request path on which to base the derived request_shape. May be specified multiple times. Patterns are considered in order; first match wins.
+<% @app_opts['request_pattern'].each do |field| %>
+RequestPattern = <%= field %>
+<% end %>
+
+; How to parse the request query parameters. 'whitelist' means only extract listed query keys. 'all' means to extract all query parameters as individual columns
+RequestParseQuery = <%= @app_opts['request_parse_query'] %>
+
+; Request query parameter key names to extract, when request_parse_query is 'whitelist'. May be specified multiple times.
+<% @app_opts['request_query_keys'].each do |key| %>
+RequestQueryKeys = <%= key %>
+<% end %>
+
+; When rate limited by the API, back off and retry sending failed events. Otherwise failed events are dropped. When --backfill is set, it will override this option=true
+; BackOff = false
+
+[Required Options]
+; Parser module to use. Use --list to list available options.
+ParserName = <%= @parser %>
+
+; Team write key
+WriteKey = <%= @writekey %>
+
+; Log file(s) to parse. Use '-' for STDIN, use this flag multiple times to tail multiple files, or use a glob (/path/to/foo-*.log)
+<% @logfiles.each do |logfile| %>
+LogFiles = <%= logfile %>
+<% end %>
+
+; Name of the dataset
+Dataset = <%= @dataset %>
+
+[Other Modes]
+; Show this help message
+; Help = false
+
+; List available parsers
+; ListParsers = false
+
+; Show version
+; Version = false
+
+[Tail Options]
+; Location in the file from which to start reading. Values: beginning, end, last. Last picks up where it left off, if the file has not been rotated, otherwise beginning. When --backfill is set, it will override this option=beginning
+ReadFrom = <%= @tail_opts['read_from'] %>
+
+; Stop reading the file after reaching the end rather than continuing to tail. When --backfill is set, it will override this option=true
+Stop = <%= @tail_opts['stop'] %>
+
+; use poll instead of inotify to tail files
+Poll = <%= @tail_opts['poll'] %>
+
+; File in which to store the last read position. Defaults to a file with the same path as the log file and the suffix .leash.state. If tailing multiple files, default is forced.
+StateFile = <%= @tail_opts['statefile'] %>
+
+<% if @parser == 'nginx' %>
+[Nginx Parser Options]
+; Path to Nginx config file
+ConfigFile = <%= @nginx_opts['config'] %>
+
+; Log format name to look for in the Nginx config file
+LogFormatName = <%= @nginx_opts['log_format'] %>
+<% end %>
+
+<% if @parser == 'json' %>
+[JSON Parser Options]
+; Name of the field that contains a timestamp
+TimeFieldName = <%= @json_opts['timefield'] %>
+
+; Format of the timestamp found in timefield (supports strftime and Golang time formats)
+Format = <%= @json_opts['format'] %>
+<% end %>
+
+<% if @parser == 'mysql' %>
+[MySQL Parser Options]
+; MySQL host in the format (address:port)
+Host = <%= @mysql_opts['host'] %>
+
+; MySQL username
+User = <%= @mysql_opts['user'] %>
+
+; MySQL password
+Pass = <%= @mysql_opts['pass'] %>
+
+; interval for querying the MySQL DB in seconds
+QueryInterval =  <%= @mysql_opts['query_interval'] %>
+<% end %>
+
+<% if @parser == 'mongo' %>
+[MongoDB Parser Options]
+; Send what was successfully parsed from a line (only if the error occured in the log line's message).
+gPartials =  <%= @mongo_opts['partials'] %>
+<% end %>
+

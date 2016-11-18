@@ -1,0 +1,70 @@
+#!/bin/sh
+
+# start script for honeytail
+# http://honeycomb.io
+
+name="honeytail"
+command="/usr/local/bin/honeytail"
+command_args="-c /usr/local/etc/honeytail.conf <%= @additional_flags.join(" ") %>"
+daemon="/usr/bin/daemon"
+
+[ -x "$daemon" ] || exit 0
+[ -x "$command" ] || exit 0
+
+pidfiles="/var/run/honeytail/"
+user="honeytail"
+stdout="daemon.info"
+stderr="daemon.err"
+
+case "$1" in
+	start)
+		# This if statement isn't strictly necessary but it's user friendly
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo "$name is already running."
+		else
+			echo -n "Starting $name..."
+			"$daemon" --respawn $daemon_start_args \
+				--name "$name" --pidfiles "$pidfiles" \
+				--user $user --stdout $stdout --stderr $stderr \
+				-- \
+				"$command" $command_args
+			echo "done."
+		fi
+		;;
+
+	stop)
+		# This if statement isn't strictly necessary but it's user friendly
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo -n "Stopping $name..."
+			"$daemon" --stop --name "$name" --pidfiles "$pidfiles"
+			echo "done."
+		else
+			echo "$name is not running."
+		fi
+		;;
+
+	restart|reload)
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo -n "Restarting $name..."
+		else
+			echo -n "$name is not running. starting anyways"
+		fi
+		"$daemon" --restart --name "$name" --pidfiles "$pidfiles"
+		echo "done."
+		;;
+
+	status)
+		"$daemon" --running --name "$name" --pidfiles "$pidfiles" --verbose
+		;;
+
+	*)
+		echo "usage: $0 <start|stop|restart|status>" >&2
+		exit 1
+esac
+
+exit 0
+
+# vi:set ts=4 sw=4:
