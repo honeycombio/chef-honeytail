@@ -1,6 +1,10 @@
 Chef cookbook to install honeytail
 ==================================
 
+[![OSS Lifecycle](https://img.shields.io/osslifecycle/honeycombio/chef-honeytail)](https://github.com/honeycombio/home/blob/main/honeycomb-oss-lifecycle-and-practices.md)
+
+**STATUS: this project is being sunset.** See https://github.com/honeycombio/chef-honeytail/issues/1
+
 For more details on honeytail, see the [Honeycomb docs](https://docs.honeycomb.io)
 
 
